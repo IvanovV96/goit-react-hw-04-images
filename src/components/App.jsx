@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { ToastContainer } from 'react-toastify';
-
 import 'react-toastify/dist/ReactToastify.css';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
@@ -23,12 +22,7 @@ export class App extends Component {
       return <p>Enter your request</p>;
     }
     if (status === 'pending') {
-      return (
-        <>
-          <ImageGallery images={images} />
-          <Loader />
-        </>
-      );
+      return <Loader />;
     }
     if (status === 'rejected') {
       return <Error message={this.state.error} />;
@@ -49,15 +43,20 @@ export class App extends Component {
 
   async componentDidUpdate(prevProps, prevState) {
     const { inputValue, page } = this.state;
-    if (prevState.inputValue !== inputValue || prevState.page !== page) {
+    if (prevState.page !== page) {
+      const images = await fetchImg(inputValue, page);
+      const imagesAll = [...prevState.images, ...images];
+      this.setState({ images: imagesAll, status: 'resolved' });
+    }
+    if (prevState.inputValue !== inputValue) {
       try {
         this.setState({ status: 'pending' });
-        const imagesOne = await fetchImg(inputValue, page);
-        const images = [...prevState.images, ...imagesOne];
+        const images = await fetchImg(inputValue, page);
         if (images.length === 0) {
           this.setState({
             status: 'rejected',
             error: `There is no photo by ${inputValue} request`,
+            images: [],
           });
           return;
         }
