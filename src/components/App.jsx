@@ -43,7 +43,6 @@ export class App extends Component {
           this.setState({ images, status: 'resolved' });
         } else {
           const imagesAll = [...prevState.images, ...images];
-          console.log('total', total, 'images.length', imagesAll.length);
           if (imagesAll.length >= total) this.setState({ showButton: false });
           this.setState({ images: imagesAll, status: 'resolved' });
         }

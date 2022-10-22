@@ -1,5 +1,6 @@
-import ImageGalleryItem from 'components/ImageGalleryItem';
+import PropTypes from 'prop-types';
 import { Component } from 'react';
+import ImageGalleryItem from 'components/ImageGalleryItem';
 
 class ImageGallery extends Component {
   render() {
@@ -15,3 +16,7 @@ class ImageGallery extends Component {
 }
 
 export default ImageGallery;
+
+ImageGallery.propTypes = {
+  images: PropTypes.arrayOf(PropTypes.object),
+};

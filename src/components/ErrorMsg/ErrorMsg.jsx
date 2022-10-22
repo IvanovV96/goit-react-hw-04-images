@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 const Error = ({ message }) => {
   return (
     <div
@@ -13,3 +15,7 @@ const Error = ({ message }) => {
 };
 
 export default Error;
+
+Error.propTypes = {
+  message: PropTypes.string,
+};

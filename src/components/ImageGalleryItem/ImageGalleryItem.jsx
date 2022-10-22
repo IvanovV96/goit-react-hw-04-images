@@ -1,5 +1,6 @@
-import Modal from 'components/Modal';
+import PropTypes from 'prop-types';
 import { Component } from 'react';
+import Modal from 'components/Modal';
 
 class ImageGalleryItem extends Component {
   state = { isModalOpen: false };
@@ -25,7 +26,6 @@ class ImageGalleryItem extends Component {
   };
   render() {
     const { id, webformatURL, tags, largeImageURL } = this.props.image;
-
     const { isModalOpen } = this.state;
     return (
       <li className="ImageGalleryItem" key={id}>
@@ -44,3 +44,12 @@ class ImageGalleryItem extends Component {
 }
 
 export default ImageGalleryItem;
+
+ImageGalleryItem.propTypes = {
+  image: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    webformatURL: PropTypes.string.isRequired,
+    tags: PropTypes.string.isRequired,
+    largeImageURL: PropTypes.string.isRequired,
+  }),
+};
