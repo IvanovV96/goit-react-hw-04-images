@@ -14,7 +14,52 @@ export class App extends Component {
     page: 1,
     images: [],
     status: 'idle',
+    showButton: false,
     error: null,
+  };
+
+  async componentDidUpdate(prevProps, prevState) {
+    const { inputValue, page } = this.state;
+    if (prevState.page !== page || prevState.inputValue !== inputValue) {
+      this.setState({ status: 'pending', showButton: false });
+
+      try {
+        const fetchedData = await fetchImg(inputValue, page);
+        const total = fetchedData.totalHits;
+        const images = fetchedData.hits;
+        if (images.length === 0) {
+          this.setState({
+            status: 'rejected',
+            error: `There is no photo by ${inputValue} request`,
+            images: [],
+            showButton: false,
+          });
+          return;
+        }
+        if (images.length > 11) {
+          this.setState({ showButton: true });
+        }
+        if (prevState.inputValue !== inputValue) {
+          this.setState({ images, status: 'resolved' });
+        } else {
+          const imagesAll = [...prevState.images, ...images];
+          console.log('total', total, 'images.length', imagesAll.length);
+          if (imagesAll.length >= total) this.setState({ showButton: false });
+          this.setState({ images: imagesAll, status: 'resolved' });
+        }
+      } catch (error) {
+        this.setState({ error, status: 'rejected' });
+      }
+    }
+  }
+
+  onSubmit = value => {
+    this.setState({ inputValue: value, page: 1, images: [] });
+  };
+  onButtonClick = () => {
+    this.setState(prevState => {
+      return { page: prevState.page + 1 };
+    });
   };
 
   switchStatus = (status, images) => {
@@ -22,7 +67,12 @@ export class App extends Component {
       return <p>Enter your request</p>;
     }
     if (status === 'pending') {
-      return <Loader />;
+      return (
+        <>
+          <ImageGallery images={images} />
+          <Loader />
+        </>
+      );
     }
     if (status === 'rejected') {
       return <Error message={this.state.error} />;
@@ -31,49 +81,13 @@ export class App extends Component {
       return <ImageGallery images={images} />;
     }
   };
-
-  onSubmit = value => {
-    this.setState({ inputValue: value });
-  };
-  onButtonClick = e => {
-    this.setState(prevState => {
-      return { page: prevState.page + 1 };
-    });
-  };
-
-  async componentDidUpdate(prevProps, prevState) {
-    const { inputValue, page } = this.state;
-    if (prevState.page !== page) {
-      const images = await fetchImg(inputValue, page);
-      const imagesAll = [...prevState.images, ...images];
-      this.setState({ images: imagesAll, status: 'resolved' });
-    }
-    if (prevState.inputValue !== inputValue) {
-      try {
-        this.setState({ status: 'pending' });
-        const images = await fetchImg(inputValue, page);
-        if (images.length === 0) {
-          this.setState({
-            status: 'rejected',
-            error: `There is no photo by ${inputValue} request`,
-            images: [],
-          });
-          return;
-        }
-        this.setState({ images, status: 'resolved' });
-      } catch (error) {
-        this.setState({ error: error.message, status: 'rejected' });
-      }
-    }
-  }
-
   render() {
-    const { status, images } = this.state;
+    const { status, images, showButton } = this.state;
     return (
       <>
         <Searchbar onSubmit={this.onSubmit} />
         {this.switchStatus(status, images)}
-        {images.length > 11 && <Button onClick={this.onButtonClick} />}
+        {showButton && <Button onClick={this.onButtonClick} />}
         <ToastContainer />
       </>
     );

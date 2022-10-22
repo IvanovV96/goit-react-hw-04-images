@@ -4,7 +4,7 @@ const Error = ({ message }) => {
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
     >
       <img
-        src="https://pbs.twimg.com/profile_images/1155645244563742721/tuCu6BT-_400x400.jpg"
+        src="https://i.pinimg.com/550x/52/a9/44/52a94478ee4e05b734b0a0091d9a1387.jpg"
         alt="sad cat"
       />
       {message}
