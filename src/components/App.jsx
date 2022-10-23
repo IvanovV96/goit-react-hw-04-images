@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Searchbar from './Searchbar';
@@ -8,7 +8,82 @@ import Error from 'components/ErrorMsg';
 import fetchImg from 'services/pixabay-api';
 import Button from './Button';
 
-export class App extends Component {
+export const App = () => {
+  const [inputValue, setInputValue] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [status, setStatus] = useState('idle');
+  const [showButton, setShowButton] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    try {
+      fetchData();
+      async function fetchData() {
+        setStatus('pending');
+        setShowButton(false);
+        const data = await fetchImg(inputValue, page);
+        const total = data.totalHits;
+        const images = data.hits;
+        setStatus('resolved');
+        setImages(images);
+        if (images.length === 0) {
+          setStatus('rejected');
+          setError(`There is no photo by ${inputValue} request`);
+          setImages([]);
+          setShowButton(false);
+          return;
+        }
+        if (images.length > 11) {
+          setShowButton(true);
+        }
+      }
+    } catch (error) {
+      setStatus('rejected');
+      setError(error.toString());
+    }
+  }, [inputValue, page]);
+
+  const onSubmit = value => {
+    setInputValue(value);
+    setPage(1);
+    setImages([]);
+  };
+
+  const onButtonClick = () => {
+    setPage(state => state + 1);
+  };
+
+  const switchStatus = (status, images) => {
+    if (status === 'idle') {
+      return <p>Enter your request</p>;
+    }
+    if (status === 'pending') {
+      return (
+        <>
+          <ImageGallery images={images} />
+          <Loader />
+        </>
+      );
+    }
+    if (status === 'rejected') {
+      return <Error message={error} />;
+    }
+    if (status === 'resolved') {
+      return <ImageGallery images={images} />;
+    }
+  };
+  return (
+    <>
+      <Searchbar onSubmit={onSubmit} />
+      {switchStatus(status, images)}
+      {showButton && <Button onClick={onButtonClick} />}
+      <ToastContainer />
+    </>
+  );
+};
+
+export class oldApp extends Component {
   state = {
     inputValue: '',
     page: 1,
@@ -36,9 +111,7 @@ export class App extends Component {
           });
           return;
         }
-        if (images.length > 11) {
-          this.setState({ showButton: true });
-        }
+
         if (prevState.inputValue !== inputValue) {
           this.setState({ images, status: 'resolved' });
         } else {
