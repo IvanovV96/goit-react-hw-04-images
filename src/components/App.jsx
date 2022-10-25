@@ -1,4 +1,4 @@
-import { Component, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Searchbar from './Searchbar';
@@ -15,33 +15,44 @@ export const App = () => {
   const [status, setStatus] = useState('idle');
   const [showButton, setShowButton] = useState(false);
   const [error, setError] = useState(null);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    try {
-      fetchData();
-      async function fetchData() {
-        setStatus('pending');
-        setShowButton(false);
+    async function fetchData() {
+      if (inputValue === '') return;
+      setStatus('pending');
+      setShowButton(false);
+      try {
         const data = await fetchImg(inputValue, page);
-        const images = data.hits;
+        const imagesA = data.hits;
+        setTotal(data.totalHits);
         setStatus('resolved');
-        setImages(state => [...state, ...images]);
-        if (images.length === 0) {
+        setImages(prev => {
+          return [...prev, ...imagesA];
+        });
+        if (imagesA.length === 0) {
           setStatus('rejected');
           setError(`There is no photo by ${inputValue} request`);
           setImages([]);
           setShowButton(false);
           return;
         }
-        if (images.length > 11) {
+        if (imagesA.length > 11) {
           setShowButton(true);
         }
+      } catch (error) {
+        setStatus('rejected');
+        setError(error.toString());
       }
-    } catch (error) {
-      setStatus('rejected');
-      setError(error.toString());
     }
+    fetchData();
   }, [inputValue, page]);
+
+  useEffect(() => {
+    if (images.length >= total) {
+      setShowButton(false);
+    }
+  }, [images.length, total]);
 
   const onSubmit = value => {
     setInputValue(value);
@@ -81,86 +92,3 @@ export const App = () => {
     </>
   );
 };
-
-export class oldApp extends Component {
-  state = {
-    inputValue: '',
-    page: 1,
-    images: [],
-    status: 'idle',
-    showButton: false,
-    error: null,
-  };
-
-  async componentDidUpdate(prevProps, prevState) {
-    const { inputValue, page } = this.state;
-    if (prevState.page !== page || prevState.inputValue !== inputValue) {
-      this.setState({ status: 'pending', showButton: false });
-
-      try {
-        const fetchedData = await fetchImg(inputValue, page);
-        const total = fetchedData.totalHits;
-        const images = fetchedData.hits;
-        if (images.length === 0) {
-          this.setState({
-            status: 'rejected',
-            error: `There is no photo by ${inputValue} request`,
-            images: [],
-            showButton: false,
-          });
-          return;
-        }
-
-        if (prevState.inputValue !== inputValue) {
-          this.setState({ images, status: 'resolved' });
-        } else {
-          const imagesAll = [...prevState.images, ...images];
-          if (imagesAll.length >= total) this.setState({ showButton: false });
-          this.setState({ images: imagesAll, status: 'resolved' });
-        }
-      } catch (error) {
-        this.setState({ error, status: 'rejected' });
-      }
-    }
-  }
-
-  onSubmit = value => {
-    this.setState({ inputValue: value, page: 1, images: [] });
-  };
-  onButtonClick = () => {
-    this.setState(prevState => {
-      return { page: prevState.page + 1 };
-    });
-  };
-
-  switchStatus = (status, images) => {
-    if (status === 'idle') {
-      return <p>Enter your request</p>;
-    }
-    if (status === 'pending') {
-      return (
-        <>
-          <ImageGallery images={images} />
-          <Loader />
-        </>
-      );
-    }
-    if (status === 'rejected') {
-      return <Error message={this.state.error} />;
-    }
-    if (status === 'resolved') {
-      return <ImageGallery images={images} />;
-    }
-  };
-  render() {
-    const { status, images, showButton } = this.state;
-    return (
-      <>
-        <Searchbar onSubmit={this.onSubmit} />
-        {this.switchStatus(status, images)}
-        {showButton && <Button onClick={this.onButtonClick} />}
-        <ToastContainer />
-      </>
-    );
-  }
-}

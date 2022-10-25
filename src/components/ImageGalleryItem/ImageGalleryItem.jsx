@@ -1,47 +1,44 @@
 import PropTypes from 'prop-types';
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from 'components/Modal';
 
-class ImageGalleryItem extends Component {
-  state = { isModalOpen: false };
-  componentDidMount() {
-    document.addEventListener('keydown', this.escModal);
-  }
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.escModal);
-  }
-
-  escModal = e => {
+const ImageGalleryItem = ({
+  image: { id, webformatURL, tags, largeImageURL },
+}) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  useEffect(() => {
+    document.addEventListener('keydown', escModal);
+    return () => {
+      document.removeEventListener('keydown', escModal);
+    };
+  }, []);
+  const escModal = e => {
     if (e.key === 'Escape') {
-      this.setState({ isModalOpen: false });
+      setIsModalOpen(false);
     }
   };
-  openModal = () => {
-    this.setState({ isModalOpen: true });
+  const openModal = () => {
+    setIsModalOpen(true);
   };
-  closeModal = e => {
+  const closeModal = e => {
     if (e.target.id === 'modal') {
-      this.setState({ isModalOpen: false });
+      setIsModalOpen(false);
     }
   };
-  render() {
-    const { id, webformatURL, tags, largeImageURL } = this.props.image;
-    const { isModalOpen } = this.state;
-    return (
-      <li className="ImageGalleryItem" key={id}>
-        <img
-          className="ImageGalleryItem-image"
-          src={webformatURL}
-          alt={tags}
-          onClick={this.openModal}
-        />
-        {isModalOpen && (
-          <Modal src={largeImageURL} alt={tags} onClick={this.closeModal} />
-        )}
-      </li>
-    );
-  }
-}
+  return (
+    <li className="ImageGalleryItem" key={id}>
+      <img
+        className="ImageGalleryItem-image"
+        src={webformatURL}
+        alt={tags}
+        onClick={openModal}
+      />
+      {isModalOpen && (
+        <Modal src={largeImageURL} alt={tags} onClick={closeModal} />
+      )}
+    </li>
+  );
+};
 
 export default ImageGalleryItem;
 
