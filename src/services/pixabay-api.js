@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const REACT_APP_API_KEY = '30692116-8c99e11975297b99dce2811ab';
+
 axios.defaults.baseURL = 'https://pixabay.com/api/';
 
 async function fetchImg(inputValue, page) {

@@ -23,10 +23,9 @@ export const App = () => {
         setStatus('pending');
         setShowButton(false);
         const data = await fetchImg(inputValue, page);
-        const total = data.totalHits;
         const images = data.hits;
         setStatus('resolved');
-        setImages(images);
+        setImages(state => [...state, ...images]);
         if (images.length === 0) {
           setStatus('rejected');
           setError(`There is no photo by ${inputValue} request`);
