@@ -25,18 +25,18 @@ export const App = () => {
       try {
         const data = await fetchImg(inputValue, page);
         const imagesA = data.hits;
+        if (imagesA.length === 0) {
+          setStatus('rejected');
+          setError(`There is no photo by ${inputValue} request`);
+          setShowButton(false);
+          return;
+        }
         setTotal(data.totalHits);
         setStatus('resolved');
         setImages(prev => {
           return [...prev, ...imagesA];
         });
-        if (imagesA.length === 0) {
-          setStatus('rejected');
-          setError(`There is no photo by ${inputValue} request`);
-          setImages([]);
-          setShowButton(false);
-          return;
-        }
+
         if (imagesA.length > 11) {
           setShowButton(true);
         }
